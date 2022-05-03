@@ -1,26 +1,47 @@
 # File used to process data from database
-
 from time import sleep
 
 
-def get_data2(text):
-    return text
-
-def get_data(cursor):
-    cursor.execute("SELECT * FROM test_table")
-    data = cursor.fetchone()
-
-    return data
-
-def fun1(cursor):
-    cursor.execute("SELECT * FROM test_table")
-    sleep(7)
-    data = cursor.fetchone()
-    print("data from fun1", data)
-    return data
-
-def fun2(cursor):
-    cursor.execute("SELECT * FROM test_table")
+def get_all_users(cursor):
+    cursor.execute("SELECT * FROM users")
     data = cursor.fetchall()
-    print("i should be first", data)
+    data = format_user_data(data, cursor)
+    data = get_totals(data, cursor)
+    data = get_metrics(data, cursor)
+    return data
+
+
+def format_user_data(data, cursor):
+    columns = []
+    for x in cursor.description:
+        columns.append(x[0])
+    to_return = []
+    for x in data:
+        user = {}
+        for i,e in enumerate(columns):
+            user[e] = x[i]
+        to_return.append(user)
+    return to_return
+    
+
+def get_totals(data, cursor):
+    for x in data:
+        user_id = x["user_id"]
+        cursor.execute("SELECT COUNT(user_id) from posts where user_id = %s", [user_id])
+        total_posts = cursor.fetchone()
+        x["total_posts"] = total_posts[0]
+    return data
+
+
+def get_metrics(data, cursor):
+    columns = ["hate_score", "normal_score", "offensive_score", "profanity_score",
+     "race_score", "religion_score", "sex_score", "other_score", "none_score"]
+    for x in data:
+        metrics = {}
+        for c in columns:
+            exec_string = "select avg(" + c + ") from metrics inner join posts using(post_id) where posts.user_id = %s;"
+            cursor.execute(exec_string, [x["user_id"]])
+            value = cursor.fetchone()
+            metrics[c] = value[0]
+        x["metrics"] = metrics
     return data

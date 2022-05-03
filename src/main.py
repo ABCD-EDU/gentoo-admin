@@ -13,23 +13,9 @@ async def root():
 async def return_text(text: str) -> str:
     return {"text": text}
 
-@app.get("/get-data")
-def get_datadb():
+@app.get("/get-users")
+def get_users():
 	cur = conn.cursor()
-	data = get_data(cur)
-	cur.close()
-	return data
-
-@app.get("/fun1")
-def get_datadb():
-	cur = conn.cursor()
-	data = fun1(cur)
-	cur.close()
-	return data
-
-@app.get("/fun2")
-def get_datadb():
-	cur = conn.cursor()
-	data = fun2(cur)
+	data = get_all_users(cur)
 	cur.close()
 	return data

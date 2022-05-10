@@ -43,11 +43,9 @@ def get_metrics(data, cursor):
     columns = ["hate_score", "normal_score", "offensive_score", "profanity_score",
      "race_score", "religion_score", "sex_score", "other_score", "none_score"]
     for x in data:
-        metrics = {}
         for c in columns:
             exec_string = "select avg(" + c + ") from metrics inner join posts using(post_id) where posts.user_id = %s;"
             cursor.execute(exec_string, [x["user_id"]])
             value = cursor.fetchone()
-            metrics[c] = value[0]
-        x["metrics"] = metrics
+            x[c] = value[0]
     return data

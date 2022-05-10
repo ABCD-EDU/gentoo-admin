@@ -6,13 +6,38 @@ from app.config import config
 # read connection parameters
 # TODO: Determine why path is relative to the file calling the method wtf lmao
 # connect() is usually initially called from main.py (root/src/main.py)
-params = config("config.ini", "postgresql")
 
 def connect():
     conn = None
     try:
         # connect to the PostgreSQL server
         print('Connecting to the PostgreSQL database...')
+        params = config("config.ini", "postgresql_gentoo_posts")
+        conn = psycopg2.connect(**params)
+		
+        # create a cursor
+        cur = conn.cursor()
+        
+	    # execute a statement
+        print('PostgreSQL database version:')
+        cur.execute('SELECT version()')
+
+        # display the PostgreSQL database server version
+        db_version = cur.fetchone()
+        print(db_version)
+       
+	    # close the communication with the PostgreSQL
+        cur.close()
+        return conn
+    except (Exception, psycopg2.DatabaseError) as error:
+        print(error)
+
+def connect_users():
+    conn = None
+    try:
+        # connect to the PostgreSQL server
+        print('Connecting to the PostgreSQL database...')
+        params = config("config.ini", "postgresql_gentoo_users")
         conn = psycopg2.connect(**params)
 		
         # create a cursor

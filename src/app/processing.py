@@ -8,6 +8,14 @@ def get_all_users(cursor):
     data = get_metrics(data, cursor)
     return data
 
+def get_all_users_capped(cursor, qty):
+    cursor.execute("SELECT * FROM users LIMIT %s", [qty])
+    data = cursor.fetchall()
+    data = format_user_data(data, cursor)
+    data = get_total_reports(data, cursor)
+    data = get_metrics(data, cursor)
+    return data
+
 
 def format_user_data(data, cursor):
     columns = []

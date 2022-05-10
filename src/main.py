@@ -19,3 +19,10 @@ def get_users():
 	data = get_all_users(cur)
 	cur.close()
 	return data
+
+@app.get("/get-users/{qty}")
+def get_users(qty):
+	cur = conn.cursor()
+	data = get_all_users_capped(cur, qty)
+	cur.close()
+	return data

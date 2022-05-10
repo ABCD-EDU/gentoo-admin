@@ -1,12 +1,10 @@
 # File used to process data from database
-from time import sleep
-
 
 def get_all_users(cursor):
     cursor.execute("SELECT * FROM users")
     data = cursor.fetchall()
     data = format_user_data(data, cursor)
-    data = get_totals(data, cursor)
+    data = get_total_reports(data, cursor)
     data = get_metrics(data, cursor)
     return data
 
@@ -24,12 +22,12 @@ def format_user_data(data, cursor):
     return to_return
     
 
-def get_totals(data, cursor):
+def get_total_reports(data, cursor):
     for x in data:
         user_id = x["user_id"]
-        cursor.execute("SELECT COUNT(user_id) from posts where user_id = %s", [user_id])
+        cursor.execute("select count(poster_id) from reports where poster_id = %s;", [user_id])
         total_posts = cursor.fetchone()
-        x["total_posts"] = total_posts[0]
+        x["reports"] = total_posts[0]
     return data
 
 

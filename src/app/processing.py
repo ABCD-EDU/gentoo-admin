@@ -18,7 +18,8 @@ filters = {1:{"category":"HATE", "min":50, "max":100},
 def search_filtered_users(cursor, queryInfo):
     name = queryInfo["name"]
     filters = queryInfo["filters"]
-    query = build_query(filters, name)
+    sorting = queryInfo["sorting"]
+    query = build_query(filters, name, sorting["category"], sorting["order"])
     print(query)
     cursor.execute(query)
     data = cursor.fetchall()
@@ -28,19 +29,22 @@ def search_filtered_users(cursor, queryInfo):
     return data
 
 
-def build_query(filters, name):
-    query = "SELECT * from users where username like '%" + name + "%'"
+def build_query(filters, name, sort_by, order):
+    query = "SELECT users.user_id, users.username, users.email, users.google_photo " \
+        "from users inner join posts using(user_id) inner join metrics on posts.post_id = metrics.post_id " \
+            "where users.username like '%" +name+ "%'"
     # Add filters
-    if len(filters) == 0:
-        return query + " limit 10;"
-    else:
+    if len(filters) != 0:
         for x in filters:
             categ = categ_dict[x["category"].lower()]
             floor = str(x["minScore"]/100)
             ceil = str(x["maxScore"]/100)
             query += " and (select avg("+ categ +") from metrics inner join posts using(post_id) where " \
                 "posts.user_id = users.user_id) between " + floor + " and " + ceil
-    return query + " limit 10;"
+    # Group by and order
+    query += " group by users.user_id, users.username, users.email, users.google_photo"
+    query += " order by avg(metrics." + categ_dict[sort_by.lower()] + ") " + order + ";"
+    return query
 
 
 def search_users(cursor, name):

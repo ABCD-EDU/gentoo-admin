@@ -1,5 +1,14 @@
 # File used to process data from database
 
+def search_users(cursor, name):
+    cursor.execute("SELECT * FROM users WHERE username LIKE '%" + name + "%'")
+    data = cursor.fetchall()
+    data = format_user_data(data, cursor)
+    data = get_total_reports(data, cursor)
+    data = get_metrics(data, cursor)
+    return data
+
+
 def get_all_users(cursor):
     cursor.execute("SELECT * FROM users")
     data = cursor.fetchall()

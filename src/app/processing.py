@@ -19,7 +19,9 @@ def search_filtered_users(cursor, queryInfo):
     name = queryInfo["name"]
     filters = queryInfo["filters"]
     sorting = queryInfo["sorting"]
-    query = build_query(filters, name, sorting["category"], sorting["order"])
+    pagination = queryInfo["pagination"]
+    query = build_query(filters, name, sorting["category"],
+     sorting["order"], pagination["offset"], pagination["limit"])
     print(query)
     cursor.execute(query)
     data = cursor.fetchall()
@@ -29,7 +31,7 @@ def search_filtered_users(cursor, queryInfo):
     return data
 
 
-def build_query(filters, name, sort_by, order):
+def build_query(filters, name, sort_by, order, offset, limit):
     query = "SELECT users.user_id, users.username, users.email, users.google_photo " \
         "from users inner join posts using(user_id) inner join metrics on posts.post_id = metrics.post_id " \
             "where users.username like '%" +name+ "%'"
@@ -43,7 +45,9 @@ def build_query(filters, name, sort_by, order):
                 "posts.user_id = users.user_id) between " + floor + " and " + ceil
     # Group by and order
     query += " group by users.user_id, users.username, users.email, users.google_photo"
-    query += " order by avg(metrics." + categ_dict[sort_by.lower()] + ") " + order + ";"
+    query += " order by avg(metrics." + categ_dict[sort_by.lower()] + ") " + order
+    # Pagination
+    query += " offset " + str(offset) + " rows limit " + str(limit) + ";"
     return query
 
 

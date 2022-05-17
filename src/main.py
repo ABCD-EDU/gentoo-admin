@@ -1,7 +1,9 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from app.processing import *
 from app.connector import connect
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+import json
 
 app = FastAPI()
 conn = connect()
@@ -48,5 +50,19 @@ def get_users(qty):
 def get_users(name):
 	cur = conn.cursor()
 	data = search_users(cur, name)
+	cur.close()
+	return data
+
+
+class QueryInfo(BaseModel):
+	data: str
+
+
+@app.post("/get-filtered-users/")
+def output_params(queryInfo: QueryInfo):
+	cur = conn.cursor()
+	queryInfo = queryInfo.data
+	queryInfo = json.loads(queryInfo)
+	data = search_filtered_users(cur, queryInfo)
 	cur.close()
 	return data

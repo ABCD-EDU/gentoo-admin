@@ -1,5 +1,48 @@
 # File used to process data from database
 
+categ_dict = {
+    "hate": "hate_score",
+    "normal": "normal_score",
+    "offensive": "offensive_score",
+    "profanity": "profanity_score",
+    "race": "race_score",
+    "religion": "religion_score",
+    "sex": "sex_score",
+    "other": "other_score",
+    "none": "none_score",
+}
+
+filters = {1:{"category":"HATE", "min":50, "max":100},
+    2:{"category":"PRFN", "min":69, "max":100}}
+
+def search_filtered_users(cursor, queryInfo):
+    name = queryInfo["name"]
+    filters = queryInfo["filters"]
+    query = build_query(filters, name)
+    print(query)
+    cursor.execute(query)
+    data = cursor.fetchall()
+    data = format_user_data(data, cursor)
+    data = get_total_reports(data, cursor)
+    data = get_metrics(data, cursor)
+    return data
+
+
+def build_query(filters, name):
+    query = "SELECT * from users where username like '%" + name + "%'"
+    # Add filters
+    if len(filters) == 0:
+        return query + " limit 10;"
+    else:
+        for x in filters:
+            categ = categ_dict[x["category"].lower()]
+            floor = str(x["minScore"]/100)
+            ceil = str(x["maxScore"]/100)
+            query += " and (select avg("+ categ +") from metrics inner join posts using(post_id) where " \
+                "posts.user_id = users.user_id) between " + floor + " and " + ceil
+    return query + " limit 10;"
+
+
 def search_users(cursor, name):
     cursor.execute("SELECT * FROM users WHERE username LIKE '%" + name + "%'")
     data = cursor.fetchall()

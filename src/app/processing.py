@@ -1,6 +1,7 @@
 # File used to process data from database
 
 categ_dict = {
+    "reports": "poster_id",
     "hate": "hate_score",
     "normal": "normal_score",
     "offensive": "offensive_score",
@@ -32,8 +33,10 @@ def search_filtered_users(cursor, queryInfo):
 
 
 def build_query(filters, name, sort_by, order, offset, limit):
-    query = "SELECT users.user_id, users.username, users.email, users.google_photo " \
-        "from users inner join posts using(user_id) inner join metrics on posts.post_id = metrics.post_id " \
+    query = "SELECT users.user_id, users.username, users.email, users.google_photo, " \
+            "(select count(poster_id) from reports where poster_id = users.user_id) " \
+            "from users inner join posts using(user_id) inner join metrics on posts.post_id = metrics.post_id " \
+            "inner join reports on users.user_id = reports.poster_id " \
             "where users.username like '%" +name+ "%'"
     # Add filters
     if len(filters) != 0:
@@ -45,10 +48,20 @@ def build_query(filters, name, sort_by, order, offset, limit):
                 "posts.user_id = users.user_id) between " + floor + " and " + ceil
     # Group by and order
     query += " group by users.user_id, users.username, users.email, users.google_photo"
-    query += " order by avg(metrics." + categ_dict[sort_by.lower()] + ") " + order
+    sort_categ = categ_dict[sort_by.lower()]
+    if sort_categ != "poster_id":
+        query += " order by avg(metrics." + sort_categ + ") " + order
+    else:
+        query += " order by count(reports." + sort_categ + ") " + order
     # Pagination
     query += " offset " + str(offset) + " rows limit " + str(limit) + ";"
     return query
+
+
+# SELECT users.user_id, users.username, users.email, users.google_photo, (select count(poster_id) from reports where poster_id = users.user_id) from users 
+# inner join posts using(user_id) inner join metrics on posts.post_id = metrics.post_id inner join reports on users.user_id = reports.poster_id
+# where users.username like '%1%' 
+# group by users.user_id, users.username, users.email, users.google_photo order by count(reports.poster_id) asc offset 0 rows limit 10;
 
 
 def search_users(cursor, name):

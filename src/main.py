@@ -69,5 +69,12 @@ def output_params(queryInfo: QueryInfo):
 	return data
 
 
+@app.get("/get-sysmetrics/")
+def get_sys_metrics():
+	cur = conn.cursor()
+	data = get_system_metrics(cur)
+	cur.close()
+	return data
+
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8005)

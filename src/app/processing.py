@@ -63,6 +63,18 @@ def build_query(filters, name, sort_by, order, offset, limit):
 # where users.username like '%1%' 
 # group by users.user_id, users.username, users.email, users.google_photo order by count(reports.poster_id) asc offset 0 rows limit 10;
 
+def get_system_metrics(cursor):
+    mqDict = {
+        "totalUsers": "select count(user_id) from users",
+        "reportedUsers": "select count(distinct poster_id) from reports",
+        "totalPosts": "select count(post_id) from posts",
+        "reportedPosts": "select count(distinct post_id) from reports",
+    }
+    data = {}
+    for stat in mqDict:
+        cursor.execute(mqDict[stat])
+        data[stat] = cursor.fetchone()
+    return data
 
 def search_users(cursor, name):
     cursor.execute("SELECT * FROM users WHERE username LIKE '%" + name + "%'")

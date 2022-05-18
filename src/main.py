@@ -1,9 +1,10 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from app.processing import *
 from app.connector import connect
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import json
+import uvicorn
 
 app = FastAPI()
 conn = connect()
@@ -66,3 +67,7 @@ def output_params(queryInfo: QueryInfo):
 	data = search_filtered_users(cur, queryInfo)
 	cur.close()
 	return data
+
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="127.0.0.1", port=8005)

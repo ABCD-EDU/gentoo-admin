@@ -135,11 +135,16 @@ def get_metrics(data, cursor):
             x[c] = value[0]
     return data
 
-def insert_report(data, cursor):
+def insert_report(cursor, data):
     # insert into reports (poster_id, post_id, reason) values(152, 3647, 'NONE')
     try:
-        exec_string = "insert into reports (poster_id, post_id, reason) values("+ data["poster_id"]+", "+data["post_id"]+", '" +data["reason"]+ "')"
+        poster = str(data["poster_id"])
+        post_id = str(data["post_id"])
+        reason = data["reason"]
+        print(poster, post_id, reason)
+        exec_string = "insert into reports (poster_id, post_id, reason) values("+poster+", "+post_id+", '" +reason+ "')"
         cursor.execute(exec_string)
     except Exception:
+        print(Exception)
         return False
     return True

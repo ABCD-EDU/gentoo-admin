@@ -68,6 +68,15 @@ def output_params(queryInfo: QueryInfo):
 	cur.close()
 	return data
 
+@app.post("/report-post/")
+def report_post(queryInfo: QueryInfo):
+	cur = conn.cursor()
+	queryInfo = queryInfo.data
+	queryInfo = json.loads(queryInfo)
+	data = insert_report(cur, queryInfo)
+	conn.commit()
+	cur.close()
+	return data
 
 @app.get("/get-sysmetrics/")
 def get_sys_metrics():
